@@ -1,0 +1,2 @@
+binance-sdk-spot
+python-dotenv

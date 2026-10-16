@@ -1,0 +1,56 @@
+{
+  "symbol": "BTCUSDT",
+  "testnet": true,
+  "market": {
+    "timeframe": "5m",
+    "check_interval_seconds": 60
+  },
+  "take_profit_percent": 2.0,
+  "max_levels": 21,
+  "entry": {
+    "required_signals": [
+      "bollinger_bands",
+      "stochastic"
+    ],
+    "optional_signals": ["ema_filter"],
+    "minimum_confirmations": 2
+  },
+  "indicators": {
+    "bollinger_bands": {
+      "period": 20,
+      "stddev": 2.0
+    },
+    "stochastic": {
+      "k_period": 14,
+      "d_period": 3,
+      "oversold": 20,
+      "overbought": 80
+    },
+    "ema_filter": {
+      "period": 200
+    }
+  },
+  "levels": [
+    {"level": 0, "drop_percent": 0.0, "order_amount_usdt": 10.00},
+    {"level": 1, "drop_percent": 1.0, "order_amount_usdt": 12.00},
+    {"level": 2, "drop_percent": 2.0, "order_amount_usdt": 14.40},
+    {"level": 3, "drop_percent": 3.0, "order_amount_usdt": 17.28},
+    {"level": 4, "drop_percent": 4.0, "order_amount_usdt": 20.74},
+    {"level": 5, "drop_percent": 5.0, "order_amount_usdt": 24.88},
+    {"level": 6, "drop_percent": 6.0, "order_amount_usdt": 29.86},
+    {"level": 7, "drop_percent": 7.0, "order_amount_usdt": 35.83},
+    {"level": 8, "drop_percent": 8.0, "order_amount_usdt": 43.00},
+    {"level": 9, "drop_percent": 9.0, "order_amount_usdt": 51.60},
+    {"level": 10, "drop_percent": 10.0, "order_amount_usdt": 61.92},
+    {"level": 11, "drop_percent": 11.0, "order_amount_usdt": 74.30},
+    {"level": 12, "drop_percent": 12.0, "order_amount_usdt": 89.16},
+    {"level": 13, "drop_percent": 13.0, "order_amount_usdt": 106.99},
+    {"level": 14, "drop_percent": 14.0, "order_amount_usdt": 128.39},
+    {"level": 15, "drop_percent": 15.0, "order_amount_usdt": 154.07},
+    {"level": 16, "drop_percent": 16.0, "order_amount_usdt": 184.88},
+    {"level": 17, "drop_percent": 17.0, "order_amount_usdt": 221.86},
+    {"level": 18, "drop_percent": 18.0, "order_amount_usdt": 266.24},
+    {"level": 19, "drop_percent": 19.0, "order_amount_usdt": 319.49},
+    {"level": 20, "drop_percent": 20.0, "order_amount_usdt": 383.39}
+  ]
+}
