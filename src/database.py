@@ -10,6 +10,11 @@ class Database:
         self.connection = sqlite3.connect(self.path)
         self.connection.execute("PRAGMA journal_mode=WAL")
         self._create_tables()
+        columns = {row[1] for row in self.connection.execute("PRAGMA table_info(paper_positions)")}
+        if "last_entry_price" not in columns:
+            self.connection.execute("ALTER TABLE paper_positions ADD COLUMN last_entry_price REAL NOT NULL DEFAULT 0")
+            self.connection.execute("UPDATE paper_positions SET last_entry_price = average_price WHERE last_entry_price = 0")
+            self.connection.commit()
 
     def _create_tables(self) -> None:
         self.connection.execute("""
@@ -36,6 +41,7 @@ class Database:
                 total_quantity REAL NOT NULL,
                 total_cost REAL NOT NULL,
                 average_price REAL NOT NULL,
+                last_entry_price REAL NOT NULL,
                 current_level INTEGER NOT NULL,
                 target_price REAL NOT NULL,
                 opened_at TEXT NOT NULL,
@@ -91,8 +97,8 @@ class Database:
         now = datetime.now(timezone.utc).isoformat()
         quantity = amount / price
         cursor = self.connection.execute(
-            "INSERT INTO paper_positions (symbol, status, total_quantity, total_cost, average_price, current_level, target_price, opened_at) VALUES (?, 'OPEN', ?, ?, ?, 0, ?, ?)",
-            (symbol, quantity, amount, price, target_price, now),
+            "INSERT INTO paper_positions (symbol, status, total_quantity, total_cost, average_price, last_entry_price, current_level, target_price, opened_at) VALUES (?, 'OPEN', ?, ?, ?, ?, 0, ?, ?)",
+            (symbol, quantity, amount, price, price, target_price, now),
         )
         position_id = cursor.lastrowid
         self._save_trade(position_id, symbol, 0, "BUY", price, quantity, amount)
@@ -100,14 +106,14 @@ class Database:
         return position_id
 
     def add_paper_level(self, position, symbol: str, level: int, price: float, amount: float, target_price: float) -> None:
-        position_id, _, _, total_quantity, total_cost, _, _, _, _, _ = position
+        position_id, _, _, total_quantity, total_cost, _, _, _, _, _, _ = position
         quantity = amount / price
         new_quantity = total_quantity + quantity
         new_cost = total_cost + amount
         average = new_cost / new_quantity
         self.connection.execute(
-            "UPDATE paper_positions SET total_quantity = ?, total_cost = ?, average_price = ?, current_level = ?, target_price = ? WHERE id = ?",
-            (new_quantity, new_cost, average, level, target_price, position_id),
+            "UPDATE paper_positions SET total_quantity = ?, total_cost = ?, average_price = ?, last_entry_price = ?, current_level = ?, target_price = ? WHERE id = ?",
+            (new_quantity, new_cost, average, price, level, target_price, position_id),
         )
         self._save_trade(position_id, symbol, level, "BUY", price, quantity, amount)
         self.connection.commit()
@@ -118,7 +124,7 @@ class Database:
             "UPDATE paper_positions SET status = 'CLOSED', closed_at = ? WHERE id = ?",
             (datetime.now(timezone.utc).isoformat(), position_id),
         )
-        self._save_trade(position_id, position[1], position[6], "SELL", price, position[3], position[3] * price)
+        self._save_trade(position_id, position[1], position[7], "SELL", price, position[3], position[3] * price)
         self.connection.commit()
 
     def _save_trade(self, position_id, symbol, level, side, price, quantity, amount) -> None:

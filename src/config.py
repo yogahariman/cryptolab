@@ -33,4 +33,7 @@ def load_strategy(path: str | Path) -> dict:
             "Missing indicator configuration: "
             + ", ".join(sorted(missing_indicators))
         )
+    for level in config["levels"]:
+        if "spacing_percent" not in level:
+            raise ValueError(f"Level {level.get('level')} is missing spacing_percent")
     return config
